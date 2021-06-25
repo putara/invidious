@@ -1,0 +1,17 @@
+[Unit]
+Description=Invidious (An alternative YouTube front-end)
+Requires=docker.service
+After=docker.service
+
+[Service]
+RestartSec=2s
+Type=simple
+
+WorkingDirectory=/home/pi/src/invidious
+ExecStart=/usr/local/bin/docker-compose up
+ExecStop=/usr/local/bin/docker-compose down
+
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

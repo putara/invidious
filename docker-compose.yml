@@ -3,6 +3,8 @@ services:
   postgres:
     image: postgres:10
     restart: unless-stopped
+    networks:
+      - invidious
     volumes:
       - postgresdata:/var/lib/postgresql/data
       - ./config/sql:/config/sql
@@ -16,10 +18,13 @@ services:
   invidious:
     build:
       context: .
-      dockerfile: docker/Dockerfile
+      dockerfile: docker/Dockerfile.arm64
     restart: unless-stopped
-    ports:
-      - "127.0.0.1:3000:3000"
+    mem_limit: 1024M
+    networks:
+      - invidious
+    volumes:
+      - /var/run/invidious-docker/:/var/run/invidious/:rw
     environment:
       # Adapted from ./config/config.yml
       INVIDIOUS_CONFIG: |
@@ -32,11 +37,29 @@ services:
           host: postgres
           port: 5432
           dbname: invidious
+        use_quic: true
+        decrypt_polling: false
         full_refresh: false
         https_only: false
+        registration_enabled: false
         domain:
+        force_resolve: ipv4
+        bind_unix: /var/run/invidious/invidious.sock
+        popular_enabled: false
+        statistics_enabled: true
+        default_user_preferences:
+          comments:
+          - youtube
+          - ""
+          feed_menu:
+          - Subscriptions
+          - Playlists
+          default_home: none
     depends_on:
       - postgres
 
 volumes:
   postgresdata:
+
+networks:
+  invidious:
